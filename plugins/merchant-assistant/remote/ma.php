@@ -225,6 +225,9 @@ function ma_params($docroot)
 
 function ma_db(array $p)
 {
+    if (!extension_loaded('pdo_mysql')) {
+        throw new MaError('Il PHP da riga di comando del server non ha pdo_mysql: indicare in attivazione il binario PHP corretto (<env>.php=...).');
+    }
     $host = $p['database_host'];
     $port = !empty($p['database_port']) ? ';port=' . $p['database_port'] : '';
     if (strpos($host, ':') !== false && $port === '') { // host:porta o host:/socket
@@ -393,6 +396,28 @@ function ma_run($cmd, array $a)
         return;
     }
 
+    if ($cmd === 'restore') { // file di rollback generato da apply: una istruzione per riga
+        $db->beginTransaction();
+        try {
+            $n = 0;
+            foreach (explode("\n", $a['sql']) as $line) {
+                $line = trim($line);
+                if ($line === '' || strpos($line, '--') === 0) {
+                    continue;
+                }
+                list($s) = ma_guard($line, 'write');
+                $db->exec($s);
+                $n++;
+            }
+            $db->commit();
+        } catch (Exception $e) {
+            $db->rollBack();
+            throw $e;
+        }
+        echo "ripristino eseguito: $n istruzioni\n";
+        return;
+    }
+
     if ($cmd === 'modules') {
         list($rows) = ma_select($db, "SELECT m.name AS modulo, m.version AS versione, m.active AS attivo FROM {$prefix}module m ORDER BY m.name", 0);
         foreach ($rows as &$r) {
@@ -406,6 +431,8 @@ function ma_run($cmd, array $a)
 }
 
 if (!defined('MA_TEST')) {
+    // con lo script letto da stdin le costanti STDIN/STDOUT/STDERR non esistono
+    $stderr = fopen('php://stderr', 'w');
     try {
         $args = isset($argv[2]) ? json_decode(base64_decode($argv[2]), true) : array();
         if (!is_array($args) || empty($args['docroot'])) {
@@ -413,10 +440,10 @@ if (!defined('MA_TEST')) {
         }
         ma_run(isset($argv[1]) ? $argv[1] : '', $args);
     } catch (MaError $e) {
-        fwrite(STDERR, 'ERRORE: ' . $e->getMessage() . "\n");
+        fwrite($stderr, 'ERRORE: ' . $e->getMessage() . "\n");
         exit(3);
     } catch (PDOException $e) {
-        fwrite(STDERR, 'ERRORE DATABASE: ' . $e->getMessage() . "\n");
+        fwrite($stderr, 'ERRORE DATABASE: ' . $e->getMessage() . "\n");
         exit(3);
     }
 }
