@@ -1,0 +1,6 @@
+{
+  "name": "prestashop-assistant",
+  "version": "0.1.0",
+  "description": "Assistente per merchant PrestaShop: lavora sullo shop via SSH con setup guidato, backup e conferme prima di ogni modifica.",
+  "author": { "name": "bwlab", "email": "lmassa@bwlab.it" }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "bwlab-prestashop-assistant",
+  "owner": { "name": "bwlab" },
+  "metadata": { "description": "Plugin di bwlab per i merchant PrestaShop." },
+  "plugins": [
+    {
+      "name": "prestashop-assistant",
+      "source": "./plugins/prestashop-assistant",
+      "description": "Assistente per gestire lo shop PrestaShop via SSH: setup guidato e regole d'uso sicure."
+    }
+  ]
+}
