@@ -26,7 +26,7 @@ Da quel momento basta aprire la scheda Code e chiedere quello che ti serve. Per 
 
 ## Privacy
 
-I dati dello shop passano solo tra il tuo computer, i tuoi server e Anthropic (il tuo piano Claude). La chiave privata SSH resta sul tuo computer e Claude non può leggerla. La memoria tra le sessioni (claude-mem) è installata in modalità locale, senza account esterni e senza telemetria.
+I dati dello shop passano solo tra il tuo computer, i tuoi server e Anthropic (il tuo piano Claude). La chiave privata SSH resta sul tuo computer: Claude non la apre, e i comandi che potrebbero aggirare questo divieto chiedono il tuo permesso. La memoria tra le sessioni (claude-mem) è installata in modalità locale, senza account esterni e senza telemetria.
 
 ## Collaudo (per chi distribuisce il plugin)
 
@@ -36,7 +36,7 @@ Da fare su un PC Windows 11 pulito prima di darlo a un merchant:
 - [ ] Lo zip (`scripts/build.sh` → `dist/prestashop-assistant.zip`) è accettato da Upload plugin.
 - [ ] `/prestashop-assistant:setup` completo fino alla ricognizione, con `ssh-keygen` senza passphrase da PowerShell.
 - [ ] Aprendo la scheda Code in un'altra cartella, Claude conosce comunque shop, ambienti e cartella di lavoro.
-- [ ] I comandi `ssh` partono senza richiesta di permesso; `ssh ... sudo` chiede il permesso.
+- [ ] I comandi `ssh` partono senza richiesta di permesso; `ssh host "sudo ..."` (con le virgolette) e `ssh -o ...` chiedono il permesso.
 - [ ] claude-mem installato senza login a cmem.ai.
 - [ ] Una richiesta di modifica in produzione: Claude legge, mostra cosa cambia, fa il backup e chiede conferma con "PRODUZIONE".
 

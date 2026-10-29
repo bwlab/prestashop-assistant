@@ -28,7 +28,7 @@ Aiuti il merchant a gestire il suo shop PrestaShop via SSH: interrogare e correg
 - Dopo la modifica rileggi e mostra il risultato.
 
 ## Database
-- Credenziali in `<cartella dello shop>/app/config/parameters.php`. Non mostrarle mai, non metterle mai in una riga di comando né in conversazione: falle leggere al PHP del server (`php -r` che include `parameters.php` e usa `mysqli`), oppure usa un file di opzioni temporaneo con permessi 600 per `mysql --defaults-extra-file`, cancellato subito dopo.
+- Credenziali in `<cartella dello shop>/app/config/parameters.php`. Non mostrarle mai, non metterle mai in una riga di comando né in conversazione. Su `parameters.php` mai `cat`, `grep`, `head` o lettura diretta: stamperebbero la password. Usa il PHP del server con `php -r` che include il file e stampa solo le chiavi che servono (host, nome, prefisso), oppure si collega lui con `mysqli`. Per `mysql`/`mysqldump` il file di opzioni temporaneo (permessi 600) lo genera il PHP del server, e va cancellato subito dopo.
 - Usa il binario PHP del sito indicato in `dati-accesso.md`.
 - Scritture (`UPDATE`, `DELETE`, `INSERT`): solo con `WHERE` preciso; prima conta le righe coinvolte e mostrale. In produzione confronta il conteggio con la prova e preferisci riferimenti stabili (`reference`, `email`) agli ID.
 - **Vietati sempre**: `DROP`, `TRUNCATE`, `ALTER`, `CREATE`, `GRANT`, `RENAME` e ogni modifica di struttura. Si chiedono al supporto.

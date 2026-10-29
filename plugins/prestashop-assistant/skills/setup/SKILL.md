@@ -20,7 +20,7 @@ Il merchant potrebbe usare il vecchio prompt dell'assistente. Cerca:
 - le chiavi `~/.ssh/prestashop_<slug>` o `~/.ssh/prestashop_<slug>_np` (controlla solo che esistano, non aprirle);
 - la vecchia cartella di lavoro: chiedi al merchant dov'è (contiene `assistente.md` e `dati-accesso.md`).
 
-Se li trovi, riusali: quella cartella diventa la cartella di lavoro (passo 6), `<slug>-stage` diventa l'ambiente `stage` con ruolo **prova**, `<slug>-prod` l'ambiente `prod` con ruolo **produzione**, la chiave resta la stessa. Prima di convertire `dati-accesso.md` al nuovo formato, copia il vecchio in `backup/` con la data nel nome. Non creare doppioni né una seconda chiave. Poi salta i passi già coperti.
+Se li trovi, riusali: quella cartella diventa la cartella di lavoro (passo 6), `<slug>-stage` diventa l'ambiente `stage` con ruolo **prova**, `<slug>-prod` l'ambiente `prod` con ruolo **produzione**, la chiave resta la stessa. Prima di convertire `dati-accesso.md` al nuovo formato, copia il vecchio in `backup/` con la data nel nome. Sposta in `backup/` anche `CLAUDE.md`, `AGENTS.md` e `prompt-merchant.md` lasciati dal vecchio prompt: contengono regole e contatti superati che altrimenti Claude caricherebbe insieme a quelle del plugin. Spiegalo al merchant prima di spostarli. Non creare doppioni né una seconda chiave. Poi salta i passi già coperti.
 
 ## 2. Sistema e SSH
 Rileva Windows o Mac. Esegui `ssh -V`.
@@ -71,11 +71,16 @@ Se il merchant non li conosce, prepara il messaggio per chi lo supporta, con ogg
 
 ## 9. Chiave SSH
 Nome della chiave: `prestashop_<slug>`, dove slug è il nome dello shop in minuscolo senza spazi. Deve essere **senza passphrase**, così Claude si collega senza chiedere nulla.
-- Se esiste già, controlla che sia senza passphrase: `ssh-keygen -y -P "" -f ~/.ssh/prestashop_<slug>` (Windows: `-P '""'`). Se stampa la chiave pubblica va bene. Se dà errore ha una passphrase: non cancellarla, creane una nuova con lo stesso nome più `_np` e usa quel nome da qui in poi.
+- Se esiste già, controlla che sia senza passphrase:
+  - **Mac**: `ssh-keygen -y -P "" -f ~/.ssh/prestashop_<slug>`
+  - **Windows (PowerShell)**: `ssh-keygen -y -P '""' -f "$HOME\.ssh\prestashop_<slug>"` (su Windows usa sempre `$HOME\.ssh\...`, non `~/.ssh/...`).
+
+  Se stampa la chiave pubblica va bene. Considerala protetta da passphrase solo se l'errore parla di passphrase ("incorrect passphrase" o simile): in quel caso non cancellarla, creane una nuova con lo stesso nome più `_np` e usa quel nome da qui in poi. Per qualsiasi altro errore (file non trovato, permessi) fermati e spiegalo: non creare una seconda chiave.
 - Altrimenti creala:
   - **Mac**: `mkdir -p ~/.ssh && ssh-keygen -t ed25519 -N "" -C "<email> <shop>" -f ~/.ssh/prestashop_<slug>`
   - **Windows (PowerShell)**: `New-Item -ItemType Directory -Force "$HOME\.ssh" | Out-Null` e poi `ssh-keygen -t ed25519 -N '""' -C "<email> <shop>" -f "$HOME\.ssh\prestashop_<slug>"`. Scrivi `-N '""'`, non `-N ""`: con PowerShell 5.1 le virgolette vuote si perdono. Se chiede comunque una passphrase, premere Invio due volte senza scrivere.
-- Mostra la chiave **pubblica** con `ssh-keygen -y -f ~/.ssh/prestashop_<slug>` (non aprire i file della chiave: è vietato dalle impostazioni).
+- Rifai il controllo senza passphrase qui sopra subito dopo averla creata: se fallisce, la chiave è venuta con una passphrase (può succedere con alcune versioni di PowerShell); cancella solo la chiave appena creata e ricreala facendo premere Invio due volte alla richiesta.
+- Mostra la chiave **pubblica** con lo stesso comando di controllo (stampa la pubblica). Non aprire i file della chiave: è vietato dalle impostazioni.
 - La chiave pubblica va inserita sul server, in uno di due modi:
   - il merchant la manda a chi lo supporta, che la inserisce;
   - il merchant ha un pannello di hosting (cPanel, Plesk o simili) e la inserisce lui: guidalo (sezione "Accesso SSH" o "Chiavi SSH", importa chiave pubblica, autorizzala).
@@ -97,10 +102,10 @@ Prova ogni ambiente: `ssh <slug>-<ambiente> "whoami && pwd"`. Alla prima conness
 Per ogni ambiente: la cartella dello shop contiene `app`, `modules`, `themes`, `var`; `php -v` funziona; una query di sola lettura (nome dello shop dalla tabella `configuration`) con le credenziali lette dal PHP del server da `app/config/parameters.php`, mai in chiaro. Se un controllo fallisce, spiega cosa non va e prepara il messaggio per il supporto con l'errore esatto.
 
 ## 12. Ricognizione (sola lettura)
-Per ogni ambiente raccogli: utente, spazio disco (`df -h`), PHP da riga di comando (`which php`, `php -v`), `mysql`/`mysqldump`; versione di PrestaShop (`src/Core/Version.php` o `app/AppKernel.php`); cartella di amministrazione (quella nella root con `init.php`); tema attivo (tabella `shop`, campo `theme_name`) e cartelle in `themes/`; moduli in `modules/` e installati con stato; contenuto di `override/`; database: host, nome, prefisso (mai la password), numero tabelle, lingue, multistore; dimensioni di `img/`, `var/cache/`, `var/logs/`.
+Per ogni ambiente raccogli: utente, spazio disco (`df -h`), PHP da riga di comando (`which php`, `php -v`), `mysql`/`mysqldump`; versione di PrestaShop (`src/Core/Version.php` o `app/AppKernel.php`); cartella di amministrazione (quella nella root con `init.php`); tema attivo (tabella `shop`, campo `theme_name`) e cartelle in `themes/`; moduli in `modules/` e installati con stato; contenuto di `override/`; database: host, nome, prefisso letti con `php -r` che stampa solo quelle chiavi (mai `cat` o `grep` su `parameters.php`: stamperebbero la password), numero tabelle, lingue, multistore; dimensioni di `img/`, `var/cache/`, `var/logs/`.
 
 **PHP usato dal sito** (spesso diverso da quello da riga di comando):
-1. crea nella cartella dello shop `info-<8 caratteri casuali>.php` con `<?php phpinfo();`;
+1. crea nella cartella dello shop `info-<8 caratteri casuali>.php` con `<?php phpinfo(INFO_GENERAL | INFO_CONFIGURATION | INFO_MODULES);` (senza variabili d'ambiente e del server, che possono contenere password);
 2. aprilo dal computer del merchant con `curl -s https://<dominio>/info-xxxx.php` (Windows: `curl.exe`);
 3. annota PHP Version, Server API, Loaded Configuration File, DOCUMENT_ROOT, `memory_limit`, `max_execution_time`, `upload_max_filesize`, estensioni principali;
 4. **cancella subito il file**, anche se qualcosa è andato storto, e verifica che l'indirizzo risponda 404;

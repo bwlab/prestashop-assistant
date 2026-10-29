@@ -10,7 +10,8 @@ const path = require('node:path');
 
 const RULES = {
   allow: ['Bash(ssh *)', 'PowerShell(ssh *)'],
-  ask: ['Bash(ssh * sudo *)', 'PowerShell(ssh * sudo *)'],
+  // *sudo* senza spazi: copre anche `ssh host "sudo ..."`. -o/-F: ProxyCommand & co. eseguirebbero comandi locali.
+  ask: ['Bash(ssh *sudo*)', 'PowerShell(ssh *sudo*)', 'Bash(ssh *-o*)', 'PowerShell(ssh *-o*)', 'Bash(ssh *-F*)', 'PowerShell(ssh *-F*)'],
   deny: ['Read(~/.ssh/prestashop_*)', 'Edit(~/.ssh/prestashop_*)'],
 };
 

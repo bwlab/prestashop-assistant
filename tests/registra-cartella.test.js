@@ -85,3 +85,10 @@ test('CLI: cartella inesistente o relativa → exit 1', () => {
   assert.strictEqual(run(home, 'relativa').status, 1);
   assert.ok(!fs.existsSync(path.join(home, '.prestashop-assistant')));
 });
+
+test('sudo tra virgolette e opzioni -o/-F di ssh chiedono permesso', () => {
+  for (const r of ['Bash(ssh *sudo*)', 'PowerShell(ssh *sudo*)', 'Bash(ssh *-o*)', 'PowerShell(ssh *-o*)', 'Bash(ssh *-F*)', 'PowerShell(ssh *-F*)']) {
+    assert.ok(RULES.ask.includes(r), r);
+  }
+  assert.ok(!RULES.ask.includes('Bash(ssh * sudo *)'), 'regola vecchia aggirabile con le virgolette');
+});
