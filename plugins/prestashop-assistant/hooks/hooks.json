@@ -6,8 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/carica-contesto.js"],
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/carica-contesto.js\"",
             "timeout": 10
           }
         ]

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Registra la cartella di lavoro del merchant: puntatore ~/.prestashop-assistant
 // e regole in ~/.claude/settings.json (cartella consentita, ssh libero, chiave privata vietata).
-// Uso: node registra-cartella.js <percorso-assoluto-cartella>
+// Uso: node registra-cartella.js [--codex] <percorso-assoluto-cartella>
 'use strict';
 
 const fs = require('node:fs');
@@ -37,11 +37,23 @@ function writeAtomic(file, text) {
   fs.renameSync(tmp, file);
 }
 
-function main(dir) {
+// Codex: regole in un file nostro dentro ~/.codex/rules/ (o $CODEX_HOME/rules), nessun merge necessario.
+function registraCodex(home, dir) {
+  const rulesDir = path.join(process.env.CODEX_HOME || path.join(home, '.codex'), 'rules');
+  fs.mkdirSync(rulesDir, { recursive: true });
+  fs.copyFileSync(path.join(__dirname, '..', 'codex', 'prestashop-assistant.rules'), path.join(rulesDir, 'prestashop-assistant.rules'));
+  writeAtomic(path.join(home, '.prestashop-assistant'), dir);
+  console.log(`Fatto: cartella di lavoro registrata (${dir}) e regole di Codex installate.`);
+}
+
+function main(args) {
+  const codex = args[0] === '--codex';
+  const dir = codex ? args[1] : args[0];
   const home = os.homedir();
   if (!dir || !path.isAbsolute(dir) || !fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
     throw new Error(`la cartella "${dir || ''}" non esiste o non è un percorso completo`);
   }
+  if (codex) return registraCodex(home, dir);
   const claudeDir = path.join(home, '.claude');
   const file = path.join(claudeDir, 'settings.json');
   const old = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
@@ -64,7 +76,7 @@ module.exports = { mergeSettings, RULES };
 
 if (require.main === module) {
   try {
-    main(process.argv[2]);
+    main(process.argv.slice(2));
   } catch (e) {
     console.error(`Errore: ${e.message}`);
     process.exit(1);

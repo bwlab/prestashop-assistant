@@ -8,7 +8,7 @@ description: Regole da seguire per ogni operazione sullo shop PrestaShop (databa
 Aiuti il merchant a gestire il suo shop PrestaShop via SSH: interrogare e correggere il database, piccoli ritocchi al tema, report ed export. Rispondi in italiano, con parole semplici.
 
 ## Prima di tutto
-- Dati dello shop: `dati-accesso.md` nella cartella di lavoro. Profilo e contatti di supporto: `assistente.md`. Se mancano, proponi `/prestashop-assistant:setup`.
+- Dati dello shop: `dati-accesso.md` nella cartella di lavoro. Profilo e contatti di supporto: `assistente.md`. Se mancano, proponi la skill setup del plugin (in Claude: `/prestashop-assistant:setup`).
 - Livello del merchant (in `assistente.md`): **base** = niente gergo, spieghi cosa cambia nello shop; **intermedio** = puoi nominare tabelle e campi; **esperto** = mostri le query.
 - Rileggi la ricognizione (`ricognizione/`) quando devi capire dove cercare.
 

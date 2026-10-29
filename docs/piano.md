@@ -153,3 +153,11 @@ Riprende i §§ 2-6 del prompt attuale, con questi cambi:
 - Che hook `SessionStart` e `additionalDirectories` funzionino nella scheda Code di Claude Desktop su Windows 11.
 - Che lo zip venga accettato da Customize › Plugins con la cartella `hooks/` e `scripts/`.
 - Prova completa su un PC Windows 11 pulito prima di darlo a un merchant.
+
+## Codex / ChatGPT (aggiunto il 29/10/2026)
+
+Stesso repo e stesso plugin: Codex legge il marketplace e il manifest di Claude, le skill e `hooks/hooks.json` (verificato con codex-cli 0.147.0).
+- Hook in forma di comando unico (`node "${CLAUDE_PLUGIN_ROOT}/..."`): Codex non legge `args` e imposta `CLAUDE_PLUGIN_ROOT` per compatibilità. In Codex l'hook va approvato una volta dal merchant.
+- Permessi: `registra-cartella.js --codex` copia `codex/prestashop-assistant.rules` in `~/.codex/rules/`: `ssh` consentito (gira fuori dalla sandbox, rete compresa, senza aprire la rete agli altri comandi), `ssh -o`/`ssh -F` con richiesta. Le regole Codex confrontano solo l'inizio del comando: `sudo` dentro ssh e la lettura della chiave privata restano affidati alle regole d'uso.
+- Scritture fuori dalla cartella aperta: Codex chiede permesso; il setup consiglia di aprire la cartella di lavoro.
+- claude-mem non installato su Codex (richiederebbe un account esterno).

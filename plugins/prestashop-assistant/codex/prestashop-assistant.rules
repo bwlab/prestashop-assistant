@@ -1,0 +1,17 @@
+# Regole Codex del plugin prestashop-assistant, copiate in ~/.codex/rules/ dal setup.
+# ssh gira fuori dalla sandbox senza richiesta; le opzioni -o/-F (es. ProxyCommand) possono eseguire comandi locali: chiedono permesso.
+
+prefix_rule(
+    pattern = ["ssh"],
+    decision = "allow",
+    justification = "prestashop-assistant: collegamento ai server dello shop",
+    match = ["ssh shop-produzione whoami", "ssh -V"],
+)
+
+prefix_rule(
+    pattern = ["ssh", ["-o", "-F"]],
+    decision = "prompt",
+    justification = "prestashop-assistant: opzioni ssh che possono eseguire comandi sul computer",
+    match = ["ssh -o ProxyCommand=x host", "ssh -F config host"],
+    not_match = ["ssh shop-produzione whoami"],
+)

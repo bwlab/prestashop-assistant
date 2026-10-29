@@ -12,7 +12,11 @@ Contatti di supporto: quelli salvati in `assistente.md` (passo 7). Prima di quel
 Mai leggere, mostrare o copiare la chiave privata SSH. Mai chiedere password.
 
 ## 1. Dove stai lavorando
-Prova un comando innocuo (`echo ok`) e controlla che giri sul computer del merchant (`hostname`, cartella home). Se non puoi eseguire comandi, o girano in un ambiente remoto (chat di Claude, Cowork), spiega che il plugin funziona solo nella **scheda Code** di Claude Desktop e fermati.
+Prova un comando innocuo (`echo ok`) e controlla che giri sul computer del merchant (`hostname`, cartella home). Se non puoi eseguire comandi, o girano in un ambiente remoto (chat di Claude o di ChatGPT, Cowork, Codex nel cloud), spiega che il plugin funziona solo nella **scheda Code** di Claude Desktop oppure in **Codex** sul computer (app ChatGPT desktop o terminale), e fermati.
+
+Annota quale app stai usando: **Claude** o **Codex**. Alcuni passi cambiano.
+
+**Solo Codex**: lo script di avvio del plugin (carica le regole e i dati dello shop a ogni sessione) parte solo dopo che il merchant lo approva. Se all'avvio Codex chiede di fidarsi degli hook del plugin prestashop-assistant, il merchant deve approvarli (nel terminale: comando `/hooks`). Senza, il plugin funziona ma a ogni sessione va ricordato di leggere `dati-accesso.md`.
 
 ## 1b. Configurazione già esistente
 Il merchant potrebbe usare il vecchio prompt dell'assistente. Cerca:
@@ -30,7 +34,9 @@ Rileva Windows o Mac. Esegui `ssh -V`.
 ## 3. Node.js
 Esegui `node -v`. Serve la versione 20 o superiore (lo usa il plugin e la memoria). Se manca o è vecchia, fai scaricare la versione LTS da https://nodejs.org e installarla con le opzioni predefinite, poi riavviare Claude.
 
-## 4. Memoria tra le sessioni (claude-mem, facoltativa)
+## 4. Memoria tra le sessioni (claude-mem, facoltativa, solo Claude)
+In Codex salta questo passo: claude-mem richiederebbe un account esterno.
+
 Spiega in due righe: Claude ricorderà il lavoro fatto nelle sessioni precedenti; i dati restano sul computer e passano solo dal piano Claude del merchant, nessun servizio esterno. Con il suo sì esegui:
 ```
 npx claude-mem install --provider claude
@@ -51,11 +57,20 @@ Deduci **base**, **intermedio** o **esperto**. Lo salvi in `assistente.md` al pa
 ## 6. Cartella di lavoro
 Chiedi dove crearla e proponi `Documenti\Shop-<nome shop>` (Mac: `~/Documents/Shop-<nome shop>`). Creala con le sottocartelle `ricognizione`, `log`, `backup`, `report`, `export`.
 
-Poi spiega cosa fa il passo seguente e chiedi il sì: il plugin registra la cartella così la ritrova da qualunque cartella aperta, e aggiorna le impostazioni di Claude (comandi `ssh` senza richiesta di permesso, chiave privata non leggibile, `sudo` sempre con richiesta). Le altre impostazioni restano come sono, e una copia di quelle attuali viene salvata. Con il sì esegui, con il percorso completo:
+Poi spiega cosa fa il passo seguente e chiedi il sì.
+
+**Claude**: il plugin registra la cartella così la ritrova da qualunque cartella aperta, e aggiorna le impostazioni di Claude (comandi `ssh` senza richiesta di permesso, chiave privata non leggibile, `sudo` sempre con richiesta). Le altre impostazioni restano come sono, e una copia di quelle attuali viene salvata. Con il sì esegui, con il percorso completo:
 ```
 node "${CLAUDE_PLUGIN_ROOT}/scripts/registra-cartella.js" "<percorso completo della cartella>"
 ```
-Se dà errore, spiega il messaggio e fermati.
+
+**Codex**: il plugin registra la cartella e installa le regole di Codex (`ssh` senza richiesta di permesso e con accesso alla rete; `ssh -o` e `ssh -F` con richiesta). Non apre la rete agli altri comandi. Con il sì esegui:
+```
+node "${CLAUDE_PLUGIN_ROOT}/scripts/registra-cartella.js" --codex "<percorso completo della cartella>"
+```
+Poi fai riavviare Codex. Consiglia al merchant di aprire in Codex proprio la cartella di lavoro: Codex scrive senza chiedere solo nella cartella aperta, altrove chiede il permesso per ogni file (log, backup, report).
+
+Se il comando dà errore, spiega il messaggio e fermati.
 
 ## 7. Profilo e contatti di supporto
 Chiedi nome dello shop, chi lo supporta tecnicamente (nome, email, telefono facoltativo) e scrivi `assistente.md` nella cartella di lavoro: nome dello shop, nome del merchant, livello (passo 5), preferenze, contatti di supporto, sistema operativo.
@@ -117,4 +132,4 @@ Salva in `ricognizione/<ambiente>.md` (con data e ora) e, se ci sono più ambien
 ## 13. Dati di accesso e chiusura
 Scrivi `dati-accesso.md` nella cartella di lavoro, una sezione per ambiente: nome, ruolo, alias SSH, server, porta, utente, impronta, cartella dello shop, binario PHP del sito, indirizzo del sito e del back-office, database (host, nome, prefisso; credenziali in `parameters.php` sul server). Niente password, niente chiavi.
 
-Scrivi la prima voce nel log del giorno ("Setup completato"). Spiega al merchant che da ora basta aprire la scheda Code e chiedere: il plugin ricorda shop e ambienti. Per cambiare un server o un indirizzo basta rilanciare `/prestashop-assistant:setup`.
+Scrivi la prima voce nel log del giorno ("Setup completato"). Spiega al merchant che da ora basta aprire la scheda Code (Claude) o Codex e chiedere: il plugin ricorda shop e ambienti. Per cambiare un server o un indirizzo basta rilanciare il setup (Claude: `/prestashop-assistant:setup`; Codex: chiedi "rifai il setup di prestashop-assistant").

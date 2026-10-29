@@ -49,11 +49,11 @@ function buildContext({ homeDir, pluginRoot }) {
   const dir = pointer && pointer.trim();
 
   if (!dir) {
-    fixed.push(section('Configurazione', 'Il plugin prestashop-assistant non è ancora configurato su questo computer. Proponi al merchant di lanciare /prestashop-assistant:setup.'));
+    fixed.push(section('Configurazione', 'Il plugin prestashop-assistant non è ancora configurato su questo computer. Proponi al merchant di lanciare la skill setup del plugin (in Claude: /prestashop-assistant:setup).'));
     return fit(fixed, []);
   }
   if (!fs.existsSync(dir)) {
-    fixed.push(section('Configurazione', `La cartella di lavoro registrata (${dir}) non esiste più. Chiedi al merchant se l'ha spostata e proponi di rilanciare /prestashop-assistant:setup: rilancia il setup per registrare quella nuova.`));
+    fixed.push(section('Configurazione', `La cartella di lavoro registrata (${dir}) non esiste più. Chiedi al merchant se l'ha spostata e proponi di rilanciare la skill setup del plugin (in Claude: /prestashop-assistant:setup): rilancia il setup per registrare quella nuova.`));
     return fit(fixed, []);
   }
 
