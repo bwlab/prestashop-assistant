@@ -75,3 +75,19 @@ test('il frontmatter della skill non viene iniettato', () => {
   const { homeDir, pluginRoot } = setup();
   assert.doesNotMatch(buildContext({ homeDir, pluginRoot }), /name: regole-uso/);
 });
+
+test('con le regole vere e 3 ambienti resta sotto il limite e le regole sono intere', () => {
+  const { base, homeDir } = setup();
+  const pluginRoot = path.join(__dirname, '../plugins/prestashop-assistant');
+  const env = (n, r) => `## ${n}\n- ruolo: ${r}\n- alias SSH: shop-${n}\n- host: srv.example.com\n- porta: 22\n- utente: shopuser\n- impronta: SHA256:abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG\n- cartella: /var/www/vhosts/example.com/httpdocs\n- PHP del sito: /opt/plesk/php/8.1/bin/php\n- sito: https://${n}.example.com\n- back-office: https://${n}.example.com/admin123\n- DB: localhost, nome db_${n}, prefisso ps_\n`;
+  const dir = workdir(base, 'Shop', {
+    'assistente.md': '# Profilo\n- livello: base\n- supporto: Mario Bianchi, mario@example.com\n',
+    'dati-accesso.md': ['stage', 'stage-2', 'produzione'].map((n) => env(n, n === 'produzione' ? 'produzione' : 'prova')).join('\n'),
+  });
+  fs.writeFileSync(path.join(homeDir, '.prestashop-assistant'), dir);
+  const r = buildContext({ homeDir, pluginRoot });
+  const rules = fs.readFileSync(path.join(pluginRoot, 'skills/regole-uso/SKILL.md'), 'utf8').replace(/^---[\s\S]*?---\n/, '').trim();
+  assert.ok(r.length <= MAX_CHARS, `lunghezza ${r.length}`);
+  assert.ok(r.includes(rules), 'regole intere');
+  assert.doesNotMatch(r, /contenuto troncato/);
+});
